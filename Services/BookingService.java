@@ -56,7 +56,7 @@ public class BookingService {
 
         final Booking newBooking = new Booking(bookingId, show, user, seats);
 
-        // Save the booking
+        // Save the booking in storage
         showBookings.put(bookingId, newBooking);
         return newBooking;
     }
