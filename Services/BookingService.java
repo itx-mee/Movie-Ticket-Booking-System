@@ -61,7 +61,13 @@ public class BookingService {
         return newBooking;
     }
 
-    
+    public List<Seat> getBookedSeats(final Show show) {
+        return getAllBookings(show).stream()
+                .filter(Booking::isConfirmed)      // Only confirmed bookings
+                .map(Booking::getSeatsBooked)      // Extract booked seats
+                .flatMap(Collection::stream)       // Flatten seat lists
+                .collect(Collectors.toList());
+    }
 
     public void confirmBooking(final Booking booking, final User user) throws Exception {
         if (!booking.getUser().equals(user)) {
