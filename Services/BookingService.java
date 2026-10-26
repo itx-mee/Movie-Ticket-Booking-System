@@ -60,7 +60,24 @@ public class BookingService {
         showBookings.put(bookingId, newBooking);
         return newBooking;
     }
+    public List<Seat> getBookedSeats(final Show show) {
+        return getAllBookings(show).stream()
+                .filter(Booking::isConfirmed)      // Only confirmed bookings
+                .map(Booking::getSeatsBooked)      // Extract booked seats
+                .flatMap(Collection::stream)       // Flatten seat lists
+                .collect(Collectors.toList());
+    }
 
+     
+
+    private boolean isAnySeatAlreadyBooked(final Show show, final List<Seat> seats) {
+        final List<Seat> bookedSeats = getBookedSeats(show);
+        for (Seat seat : seats) {
+            if (bookedSeats.contains(seat)) return true;
+        }
+        return false;
+    }
+    
     
 
 }
