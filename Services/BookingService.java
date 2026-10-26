@@ -28,6 +28,19 @@ public class BookingService {
         this.seatLockProvider = seatLockProvider;
         this.showBookings = new ConcurrentHashMap<>();
     }
+    public Booking getBooking(final String bookingId) throws Exception  {
+        if (!showBookings.containsKey(bookingId)) {
+            throw new Exception("No Booking exists for the ID : " + bookingId);
+        }
+        return showBookings.get(bookingId);
+    }
 
-    
+    public List<Booking> getAllBookings(final Show show) {
+        List<Booking> response = new ArrayList<>();
+        for (Booking booking : showBookings.values()) {
+            if (booking.getShow().equals(show)) response.add(booking);
+        }
+        return response;
+    }
+
 }
