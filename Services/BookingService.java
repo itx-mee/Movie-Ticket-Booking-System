@@ -28,6 +28,7 @@ public class BookingService {
         this.seatLockProvider = seatLockProvider;
         this.showBookings = new ConcurrentHashMap<>();
     }
+
     public Booking getBooking(final String bookingId) throws Exception  {
         if (!showBookings.containsKey(bookingId)) {
             throw new Exception("No Booking exists for the ID : " + bookingId);
@@ -42,7 +43,6 @@ public class BookingService {
         }
         return response;
     }
-
 
     public Booking createBooking(final User user, final Show show, final List<Seat> seats) throws Exception {
         // Check if any requested seat is already booked
@@ -60,15 +60,23 @@ public class BookingService {
         showBookings.put(bookingId, newBooking);
         return newBooking;
     }
-    public List<Seat> getBookedSeats(final Show show) {
-        return getAllBookings(show).stream()
-                .filter(Booking::isConfirmed)      // Only confirmed bookings
-                .map(Booking::getSeatsBooked)      // Extract booked seats
-                .flatMap(Collection::stream)       // Flatten seat lists
-                .collect(Collectors.toList());
-    }
 
-     
+    
+
+    public void confirmBooking(final Booking booking, final User user) throws Exception {
+        if (!booking.getUser().equals(user)) {
+            throw new Exception("Cannot confirm a booking made by another user"); // User mismatch
+        }
+
+        // Validate locks for each seat
+        for (Seat seat : booking.getSeatsBooked()) {
+            if (!seatLockProvider.validateLock(booking.getShow(), seat, user)) {
+                throw new Exception("Acquired Lock is either invalid or has Expired");
+            }
+        }
+        // Mark booking as confirmed
+        booking.confirmBooking();
+    }
 
     private boolean isAnySeatAlreadyBooked(final Show show, final List<Seat> seats) {
         final List<Seat> bookedSeats = getBookedSeats(show);
@@ -77,7 +85,4 @@ public class BookingService {
         }
         return false;
     }
-    
-    
-
 }
