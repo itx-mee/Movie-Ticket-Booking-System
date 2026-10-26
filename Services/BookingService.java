@@ -43,4 +43,24 @@ public class BookingService {
         return response;
     }
 
+
+    public Booking createBooking(final User user, final Show show, final List<Seat> seats) throws Exception {
+        // Check if any requested seat is already booked
+        if (isAnySeatAlreadyBooked(show, seats)) throw new Exception("Seat Already Booked");
+
+        // Lock the seats temporarily for the user (this will throw an exception if any seat is already locked)
+        seatLockProvider.lockSeats(show, seats, user);
+
+        // Create a new booking with a unique booking ID using AtomicInteger
+        final String bookingId = String.valueOf(bookingIdCounter.getAndIncrement());
+
+        final Booking newBooking = new Booking(bookingId, show, user, seats);
+
+        // Save the booking
+        showBookings.put(bookingId, newBooking);
+        return newBooking;
+    }
+
+    
+
 }
